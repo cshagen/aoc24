@@ -10,6 +10,7 @@ fn part1(filename: &str) -> i32 {
   let mut mat: Vec<Vec<char>> = vec![];
   let mut antennas: HashMap<char, Vec<(usize, usize)>> = HashMap::new();
   let mut antinodes: Vec<(usize, usize)> = Vec::new();
+	
   for line in get_lines(filename) {
     mat.push(line.chars().collect());
   }

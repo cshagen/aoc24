@@ -1,83 +1,82 @@
 use advent24::get_lines;
-use std::i64;
+use std::u64;
+use rayon::prelude::*;
+
 const FILENAME: &'static str = "./data/d7-input.txt";
 pub fn main() {
   println!("Part 1: {}", part1(FILENAME));
   println!("Part 2: {}", part2(FILENAME));
 }
 
-fn part1(filename: &str) -> i64 {
-  let mut total = 0;
-  for line in get_lines(filename) {
-    let (result, pars) = parse_line(&line);
-    if calc1(&pars).contains(&result) {
-      total += result
-    };
-  }
-  total
+fn part1(filename: &str) -> u64 {
+  let lines = get_lines(filename);
+  lines
+    .iter()
+    .map(|s| &s[..])
+    .collect::<Vec<_>>()
+    .par_chunks(lines.len() / 32)
+    .map(|chunk| {
+      chunk
+        .iter()
+        .map(|line| {
+          let (result, pars) = parse_line(&line);
+          if calc1(&pars).contains(&result) {
+            result
+          } else {
+            0
+          }
+        })
+        .sum::<u64>()
+    })
+    .sum()
 }
-fn part2(filename: &str) -> i64 {
-  let mut total = 0;
-  for line in get_lines(filename) {
-    let (result, pars) = parse_line(&line);
-    if calc2(&pars, result).contains(&result) {
-      total += result
-    };
-  }
-  total
+fn part2(filename: &str) -> u64 {
+  let lines = get_lines(filename);
+  lines
+    .iter()
+    .map(|s| &s[..])
+    .collect::<Vec<_>>()
+    .par_chunks(lines.len() / 32)
+    .map(|chunk| {
+      chunk
+        .iter()
+        .map(|line| {
+          let (result, pars) = parse_line(&line);
+          if calc2(&pars, result).contains(&result) {
+            result
+          } else {
+            0
+          }
+        })
+        .sum::<u64>()
+    })
+    .sum()
 }
-fn parse_line(line: &str) -> (i64, Vec<i64>) {
+
+fn parse_line(line: &str) -> (u64, Vec<u64>) {
   line
     .split_once(":")
-    .map(|(res_str, par_str)| (res_str.parse::<i64>().unwrap(), par_str.split_whitespace().map(|s| s.parse::<i64>().unwrap()).collect::<Vec<i64>>()))
+    .map(|(res_str, par_str)| (res_str.parse::<u64>().unwrap(), par_str.split_whitespace().map(|s| s.parse::<u64>().unwrap()).collect::<Vec<u64>>()))
     .unwrap()
 }
 
-fn calc1(els: &[i64]) -> Vec<i64> {
-  if els.len() == 1 {
-    vec![els[0]]
-  } else {
-    vec![
-      calc1(&els[..els.len() - 1]).iter().map(|prefix| prefix + els.last().unwrap()).collect::<Vec<i64>>(),
-      calc1(&els[..els.len() - 1]).iter().map(|prefix| prefix * els.last().unwrap()).collect(),
-    ]
-    .concat()
+fn calc1(els: &[u64]) -> Vec<u64> {
+  let mut res: Vec<u64> = vec![els[0]];
+  for i in 1..els.len() {
+    res = res.iter().map(|a| vec![a * els[i], a + els[i]]).collect::<Vec<Vec<u64>>>().concat();
   }
+  res
 }
 
-fn calc2(els: &[i64], upper_bound: i64) -> Vec<i64> {
-  if els.len() == 1 {
-    vec![els[0]]
-  } else {
-    let sums: Vec<i64> = calc2(&els[..els.len() - 1], upper_bound)
-      .iter()
-      .filter(|n| **n <= upper_bound)
-      .map(|prefix| prefix + els.last().unwrap())
-      .collect();
-    let prods: Vec<i64> = calc2(&els[..els.len() - 1], upper_bound)
-      .iter()
-      .filter(|n| **n <= upper_bound)
-      .map(|prefix| prefix * els.last().unwrap())
-      .collect();
-    let concats: Vec<i64> = calc2(&els[..els.len() - 1], upper_bound)
-      .iter()
-      .filter(|n| **n <= upper_bound)
-      .map(|prefix| glue2(prefix, els.last().unwrap(), upper_bound))
-      .collect();
-
-    vec![sums, prods, concats].concat()
+fn calc2(els: &[u64], upper_bound: u64) -> Vec<u64> {
+  let mut res: Vec<u64> = vec![els[0]];
+  for i in 1..els.len() {
+    res = res.iter().map(|a| vec![a * els[i], a + els[i], glue(a, &els[i], upper_bound)]).collect::<Vec<Vec<u64>>>().concat();
   }
+  res
 }
-/* fn glue(a: &i64, b: &i64, upper_bound: i64) -> i64 {
-    if *a > upper_bound || *b > upper_bound {
-        0
-    } else {
-        let mut result = a.to_string().to_owned();
-        result.push_str(&(b.to_string()));
-        result.parse::<i64>().unwrap()
-    }
-} */
-fn glue2(a: &i64, b: &i64, upper_bound: i64) -> i64 {
+
+fn glue(a: &u64, b: &u64, upper_bound: u64) -> u64 {
   if *a > upper_bound || *b > upper_bound {
     0
   } else {
@@ -91,7 +90,3 @@ fn glue2(a: &i64, b: &i64, upper_bound: i64) -> i64 {
     a * log + b
   }
 }
-/* fn glue3(a: &i64, b: &i64, upper_bound: i64) -> i64 {
-  let s = a.to_string() + &b.to_string();
-  s[..].parse::<i64>().unwrap()
-} */
