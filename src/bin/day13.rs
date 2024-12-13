@@ -1,0 +1,61 @@
+use advent24::get_lines;
+use regex::Regex;
+const FILENAME: &'static str = "./data/d13-test.txt";
+//const RE1: &str = r"X+(?<x>\d+), Y+(?<y>\d+)";
+
+const RE1: &str = r"(?<x>\d+)";
+pub fn main() {
+  println!("Part 1: {}", part1(FILENAME));
+  //println!("Part 2: {}", part2(FILENAME));
+}
+struct Game {
+	x_a: i64,
+	x_b: i64,
+	x_r: i64,
+	y_a: i64,
+	y_b: i64,
+	y_r: i64
+}
+fn part1(filename: &str) -> i64 {
+	let lines = get_lines(filename);
+	let mut result = 0;
+	let re = Regex::new(&RE1).unwrap();
+	let mut games : Vec<Game> = vec![];
+	let mut i = 0;
+  while i < lines.len() {
+		let mut matches : Vec<i64>= re.find_iter(&lines[i]).map(|m|m.as_str().parse::<i64>().unwrap()).collect();
+		let x_a = matches[0];
+		let y_a = matches[1];
+		matches = re.find_iter(&lines[i+1]).map(|m|m.as_str().parse::<i64>().unwrap()).collect();
+		let x_b = matches[0];
+		let y_b = matches[1];
+		matches = re.find_iter(&lines[i+2]).map(|m|m.as_str().parse::<i64>().unwrap()).collect();
+		let x_r = matches[0] + 10000000000000;
+		let y_r = matches[1] + 10000000000000;
+		let g = Game {
+			x_a,
+			x_b,
+			x_r,
+			y_a,
+			y_b,
+			y_r
+		};
+		games.push(g);
+		i +=4;
+	}
+
+		for game in games {
+			
+	'outer: for a in 0..10000000000000 {
+		for b in 0..10000000000000 {
+			if a * game.x_a + b * game.x_b == game.x_r && a * game.y_a + b * game.y_b == game.y_r {
+				println!("{} - {}",a,b);
+				result += a*3 +b;
+				break 'outer;
+			}
+		}
+	}
+}
+result as i64
+}
+
