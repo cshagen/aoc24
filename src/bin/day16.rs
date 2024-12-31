@@ -1,6 +1,6 @@
 use advent24::get_lines;
 
-const FILENAME: &'static str = "./data/d16-input.txt";
+const FILENAME: &'static str = "./data/d16-test1.txt";
 
 pub fn main() {
   println!("Part 1: {}", part1(FILENAME));
@@ -105,13 +105,13 @@ impl Maze {
     let mut pos: Position;
     let mut dir: Direction;
     let mut shortest_len: i32;
+		let mut result : i32 = 0;
     self.unvisited.sort();
 
     while self.unvisited.len() > 0 {
       (self, (shortest_len, pos, dir)) = self.pop_smallest();
       if pos == self.end {
-        return shortest_len;
-      }
+				result = shortest_len;      }
       let next_steps = self.next_steps(&pos, dir);
       for (next_pos, next_dir) in next_steps.iter() {
         let el_idx = self.get_unvisited((*next_pos).clone()).unwrap_or(usize::MAX);
@@ -132,8 +132,12 @@ impl Maze {
       }
       self.unvisited.sort();
     }
-    0
+		println!("{:?}", self.board);
+    result
   }
+
+
+
   fn is_free(&self, p: &Position) -> bool {
     self.get(p.clone()) != -1
   }
