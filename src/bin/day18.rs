@@ -30,8 +30,7 @@ fn part2(filename: &str) -> i32 {
       println!("Round {}: {}", i, shortest);
     }
   }
-	
-  0
+	0
 }
 
 
