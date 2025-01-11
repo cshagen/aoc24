@@ -205,30 +205,8 @@ fn find_target(input: &str, max: usize, gates: &Vec<Gate>) -> Vec<Gate> {
   result
 }
 
-fn find_path_to_next_output(input: &str, gates: &Vec<Gate>) -> Gate {
-  let start = find_gate_for_input_and_op(input, "XOR", gates);
-  let middle1_name = start.out;
-  let middle1 = find_gate_for_input_and_op(&middle1_name, "XOR", gates);
-
-  println!("From {} to {}", input, middle1.out);
-
-  middle1.clone()
-}
 
 fn find_gates_for_input(input: &str, gates: &Vec<Gate>) -> Vec<Gate> {
   gates.iter().filter(|g| g.in1.clone() == input || g.in2 == input).map(|g| g.clone()).collect()
 }
-fn find_gate_for_input_and_op(input: &str, op: &str, gates: &Vec<Gate>) -> Gate {
-  let oper = match op {
-    "AND" => Op::AND,
-    "XOR" => Op::XOR,
-    "OR" => Op::OR,
-    _ => panic!("wrong op"),
-  };
-  gates
-    .iter()
-    .filter(|g| (g.in1.clone() == input || g.in2 == input) && g.op == oper)
-    .map(|g| g.clone())
-    .collect::<Vec<Gate>>()[0]
-    .clone()
-}
+

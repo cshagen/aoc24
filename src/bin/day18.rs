@@ -17,7 +17,7 @@ fn part1(filename: &str) -> i32 {
 }
 fn part2(filename: &str) -> i32 {
   let mut comp = Computer::new();
-	let mut result: Position = Position::new(0,0);
+	let mut result: Position;
   for i in 1..BYTECOUNT2 {
     (comp,result) = comp.parse(filename, i);
     let shortest: i32;

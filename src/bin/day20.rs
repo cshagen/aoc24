@@ -3,7 +3,7 @@ const FILENAME: &'static str = "./data/d20-input.txt";
 
 pub fn main() {
   println!("Part 1: {}", part1(FILENAME));
-  //println!("Part 2: {}", part2(FILENAME));
+  println!("Part 2: {}", part2(FILENAME));
 }
 fn part1(filename: &str) -> i64 {
   let mut race = Race {
@@ -20,6 +20,19 @@ fn part1(filename: &str) -> i64 {
   
 }
 
+fn part2(filename: &str) -> i64 {
+  let mut race = Race {
+    mat: vec![],
+		path: vec![],
+    cheats: vec![],
+    start: (0, 0),
+    end: (0, 0),
+  };
+  race = race.parse(filename);
+  race = race.mark_track((0, 0), 1);
+  race.check_cheats2() as i64
+  
+}
 struct Race {
   mat: Vec<Vec<i32>>,
 	path: Vec<(usize,usize)>,
@@ -85,9 +98,7 @@ impl Race {
 				}
 			}
 		}
-    
-      
-      if self.mat[p1.1][p1.0] == old_val {
+     if self.mat[p1.1][p1.0] == old_val {
         self = self.check_cheats(p1);
       }
     }
@@ -111,7 +122,52 @@ impl Race {
     result
   }
 
+	fn check_cheats2(&self)-> i32 {
+		let mut result : Vec<(i32,i32,i32,i32,i32)> = vec![];
+		for y in 0..self.mat[0].len() {
+			println!("{}",y);
+			for x in 0..self.mat.len() {
+				if self.get (x as i32,y as i32) > -1 {
+					let cheats = self.get_cheats2((x,y));
+					for cheat in cheats {
+						if ! result.contains(&cheat) {
+							result.push(cheat.clone());
+						}
+					}
+					
+				}
+		}
+		}
+		//println!("{:?}", result);
+		result.iter().filter(|(_,_,_,_,benefit)| *benefit >= 100).collect::<Vec<_>>().len() as i32
+	}
+
+
+
+	fn get_cheats2 (&self, p: (usize, usize)) -> Vec<(i32, i32, i32, i32, i32)> {
+		let mut result: Vec<(i32,i32,i32,i32,i32)> = vec![];
+		let x = p.0 as i32;
+		let y = p.1 as i32;
+		let limit_x = self.mat[0].len() as i32;
+		let limit_y = self.mat.len() as i32;
+		for dx  in -20..21 {
+			for dy in -20..21 {
+				let steps = (dx as i32).abs()+(dy as i32).abs() ;
+				if steps <= 20 && x + dx >= 0 && y+dy >= 0 && x+dx < limit_x && y + dy < limit_y {
+					if self.get(x+dx,y+dy) -steps - self.get(x,y) > 99 {
+						result.push ((p.0 as i32,p.1 as i32, x+dx,y+dy, self.get(x+dx,y+dy) - steps - self.get(x,y)));
+					}
+				}
+			}
+		}
+
+		result.iter().filter(|(_,_,_,_,benefit)| *benefit >= 100).map(|r|*r).collect()
+	}
   fn get_cheats(&self) -> Vec<(usize, usize, usize, usize, i32)> {
     self.cheats.to_vec()
   }
+
+	fn get (&self, x: i32, y:i32) -> i32 {
+		self.mat[y as usize][x as usize]
+	}
 }
